@@ -9,8 +9,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- Dynamic Background -->
@@ -24,12 +31,13 @@
     <header class="main-header glass-panel">
         <div class="header-container">
             <div class="logo">
-                <i class="ph-fill ph-planet"></i>
+                <i class="fa-solid fa-earth-americas"></i>
                 <span>SkyCast</span>
             </div>
             <nav class="main-nav" id="main-nav">
                 <!-- Data-target attributes link to section IDs -->
                 <a href="#" class="nav-link active" data-target="view-weather">Live Weather</a>
+                <a href="#" class="nav-link" data-target="view-compare">Compare</a>
                 <a href="#" class="nav-link" data-target="view-maps">Maps</a>
                 <a href="#" class="nav-link" data-target="view-settings">Settings</a>
             </nav>
@@ -45,19 +53,28 @@
             <!-- Search Box -->
             <section class="search-section glass-panel">
                 <div class="search-box">
-                    <i class="ph ph-magnifying-glass search-icon"></i>
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
                     <input type="text" id="city-input" placeholder="Search for any city (e.g. Lahore, London)..." autocomplete="off">
                     <button id="search-btn">Search</button>
                 </div>
                 <!-- Live Search Suggestions -->
                 <ul id="search-suggestions" class="suggestions-list hidden"></ul>
 
+                <!-- Search History -->
+                <div id="search-history" class="search-history hidden">
+                    <div class="history-header">
+                        <span><i class="fa-solid fa-clock-rotate-left"></i> Recent Searches</span>
+                        <button id="clear-history-btn" class="clear-btn">Clear</button>
+                    </div>
+                    <ul id="history-list" class="history-list"></ul>
+                </div>
+
                 <div id="error-message" class="error-message hidden">City not found. Please try again.</div>
             </section>
 
             <!-- Initial State before search -->
             <section class="empty-state glass-panel" id="empty-state">
-                <i class="ph-fill ph-globe-hemisphere-west"></i>
+                <i class="fa-solid fa-globe"></i>
                 <h2>Discover Global Weather</h2>
                 <p>Enter a city name above to get real-time metrics and a 7-day forecast.</p>
             </section>
@@ -67,6 +84,9 @@
                 <div class="spinner"></div>
                 <p>Analyzing sky data...</p>
             </div>
+
+            <!-- Weather Alerts -->
+            <div id="weather-alerts" class="weather-alerts hidden"></div>
 
             <!-- Dashboard to show weather data -->
             <div class="weather-dashboard hidden" id="weather-dashboard">
@@ -78,7 +98,7 @@
 
                     <div class="main-weather">
                         <div class="weather-icon-wrapper">
-                            <i id="main-icon" class="ph-fill ph-sun"></i>
+                            <i id="main-icon" class="fa-solid fa-sun"></i>
                         </div>
                         <div class="temperature">
                             <h1 id="temp">24</h1>
@@ -89,17 +109,38 @@
 
                     <div class="metrics-grid">
                         <div class="metric-card">
-                            <div class="metric-icon"><i class="ph ph-drop"></i></div>
+                            <div class="metric-icon"><i class="fa-solid fa-droplet"></i></div>
                             <div class="metric-info">
                                 <span class="metric-label">Humidity</span>
                                 <span id="humidity" class="metric-value">45%</span>
                             </div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-icon"><i class="ph ph-wind"></i></div>
+                            <div class="metric-icon"><i class="fa-solid fa-wind"></i></div>
                             <div class="metric-info">
                                 <span class="metric-label">Wind</span>
                                 <span id="wind-speed" class="metric-value">12 km/h</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fa-solid fa-cloud-rain"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">Rain Chance</span>
+                                <span id="rain-chance" class="metric-value">0%</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fa-solid fa-smog"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">AQI</span>
+                                <span id="aqi-value" class="metric-value">Good</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fa-solid fa-sun"></i></div>
+                            <div class="metric-info">
+                                <span class="metric-label">UV Index</span>
+                                <span id="uv-index" class="metric-value">Low</span>
                             </div>
                         </div>
                     </div>
@@ -108,13 +149,74 @@
                 <section class="forecast-section glass-panel">
                     <div class="section-header">
                         <h3>7-Day Forecast</h3>
-                        <i class="ph ph-calendar-blank"></i>
+                        <i class="fa-solid fa-calendar-days"></i>
                     </div>
                     <div class="forecast-list" id="forecast-list">
                         <!-- Javascript will put 7 days list here -->
                     </div>
                 </section>
             </div>
+
+            <!-- Hourly Rain Section -->
+            <section class="hourly-rain-section glass-panel hidden" id="hourly-rain-section">
+                <div class="section-header">
+                    <h3>Hourly Rain Forecast</h3>
+                    <i class="fa-solid fa-cloud-rain" style="color: var(--gradient-2);"></i>
+                </div>
+                <div class="hourly-rain-scroll" id="hourly-rain-container">
+                    <!-- Javascript will populate 24 hourly rain cards here -->
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <div class="charts-section glass-panel hidden" id="charts-section">
+                <div class="section-header">
+                    <h3>Hourly Trends</h3>
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <canvas id="temp-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="precip-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==============================================
+             VIEW: COMPARE
+             ============================================== -->
+        <div id="view-compare" class="view-section hidden">
+            <section class="compare-section glass-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-city"></i> Compare Cities</h2>
+                    <p class="section-desc">Compare weather metrics across multiple locations.</p>
+                </div>
+                <div class="compare-search">
+                    <input type="text" id="compare-input" placeholder="Add a city to compare...">
+                    <button id="compare-btn">Add</button>
+                </div>
+                <div class="compare-table-wrapper">
+                    <table class="compare-table" id="compare-table">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-glass);">
+                                <th style="padding: 12px;">City</th>
+                                <th style="padding: 12px;">Temp</th>
+                                <th style="padding: 12px;">Condition</th>
+                                <th style="padding: 12px;">Humidity</th>
+                                <th style="padding: 12px;">Wind</th>
+                                <th style="padding: 12px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compare-tbody">
+                            <!-- JS populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
 
@@ -122,16 +224,14 @@
              VIEW 2: MAPS
              ============================================== -->
         <div id="view-maps" class="view-section hidden">
-            <section class="glass-panel" style="padding: 30px;">
+            <section class="map-section glass-panel">
                 <div class="section-header">
-                    <h2>City Map</h2>
-                    <p style="color: var(--text-muted);">Showing map for the searched city.</p>
+                    <h2><i class="fa-solid fa-map-location-dot"></i> City Map</h2>
+                    <p class="section-desc">Showing interactive map for the searched city.</p>
                 </div>
                 
-                <!-- This iframe will be updated by Javascript -->
-                <div style="width: 100%; height: 400px; border-radius: 16px; overflow: hidden; margin-top: 20px; background: #e2e8f0; display: flex; align-items: center; justify-content: center;">
-                    <iframe id="map-iframe" width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://www.openstreetmap.org/export/embed.html?bbox=-0.15,51.45,0.05,51.55&layer=mapnik" style="border: none;"></iframe>
-                </div>
+                <!-- Leaflet Map Container -->
+                <div id="map" class="map-container"></div>
             </section>
         </div>
 
@@ -140,37 +240,37 @@
              VIEW 3: SETTINGS (Working Form)
              ============================================== -->
         <div id="view-settings" class="view-section hidden">
-            <section class="glass-panel" style="padding: 30px;">
+            <section class="settings-section glass-panel">
                 <div class="section-header">
                     <h2>Settings</h2>
-                    <p style="color: var(--text-muted);">Adjust your app preferences here.</p>
+                    <p class="section-desc">Adjust your app preferences here.</p>
                 </div>
 
-                <form id="settings-form" class="simple-form" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px; max-width: 400px;">
+                <form id="settings-form" class="simple-form">
                     
                     <!-- Temperature Unit Dropdown -->
-                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <div class="form-group">
                         <label for="temp-unit">Temperature Unit</label>
-                        <select id="temp-unit" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.5);">
+                        <select id="temp-unit" class="settings-input">
                             <option value="celsius">Celsius (°C)</option>
                             <option value="fahrenheit">Fahrenheit (°F)</option>
                         </select>
                     </div>
 
                     <!-- Notification Checkbox -->
-                    <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="form-group-inline">
                         <input type="checkbox" id="notifications" checked>
                         <label for="notifications">Enable Weather Alerts</label>
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" id="save-btn" style="margin-top: 10px; background: var(--gradient-2); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    <button type="submit" id="save-btn" class="settings-btn">
                         Save Settings
                     </button>
                 </form>
 
                 <!-- Success Message -->
-                <div id="settings-success" class="hidden" style="margin-top: 15px; padding: 10px; background: #dcfce7; color: #166534; border-radius: 8px;">
+                <div id="settings-success" class="settings-success hidden">
                     Settings saved successfully! Units updated.
                 </div>
             </section>
