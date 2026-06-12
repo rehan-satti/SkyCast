@@ -273,14 +273,41 @@ body {
 .weather-icon-wrapper { font-size: 7rem; color: var(--gradient-2); filter: drop-shadow(0 10px 15px rgba(129,140,248,0.3)); animation: pulseIcon 3s infinite ease-in-out; }
 .temperature { display: flex; align-items: flex-start; justify-content: center; }
 #temp { font-size: 6rem; font-weight: 700; letter-spacing: -3px; line-height: 1; }
+
+/* Smooth transition for the main weather icon */
+#main-icon {
+    transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+    display: inline-block;
+}
+
+/* Main Day/Night Heading for Search Results */
+.day-night-heading {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+.day-night-heading.is-day {
+    background: rgba(253, 224, 71, 0.2);
+    color: #854d0e;
+}
+.day-night-heading.is-night {
+    background: rgba(129, 140, 248, 0.2);
+    color: #3730a3;
+}
 .unit { font-size: 1.8rem; font-weight: 600; margin-top: 10px; color: var(--text-muted); }
 .condition { margin-top: 10px; font-size: 1.2rem; font-weight: 500; background: var(--bg-glass-card); padding: 6px 18px; border-radius: 100px; }
 
 .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .metric-card { background: var(--bg-glass-card); padding: 16px; border-radius: 16px; display: flex; align-items: center; }
 .metric-icon { width: 40px; height: 40px; background: var(--primary); border-radius: 12px; display: flex; justify-content: center; align-items: center; color: var(--gradient-2); font-size: 1.2rem; margin-right: 12px; }
-.metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; display: block; }
-.metric-value { font-size: 1.1rem; font-weight: 600; }
+.metric-info { flex: 1; min-width: 0; }
+.metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.metric-value { font-size: 1.1rem; font-weight: 600; white-space: nowrap; }
 
 /* Right: 7-Day Forecast */
 .forecast-section {
@@ -340,6 +367,28 @@ body {
 .forecast-condition i {
     font-size: 1.5rem;
     color: var(--gradient-2);
+}
+
+/* Emoji icon inside forecast condition box */
+.forecast-emoji {
+    font-size: 1.5rem;
+    line-height: 1;
+    display: inline-block;
+    transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+}
+
+/* Rain probability badge in forecast rows */
+.forecast-rain {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    min-width: 52px;
+    text-align: center;
+}
+
+.forecast-rain.high {
+    color: #2563eb;
 }
 
 .forecast-temps {
@@ -499,7 +548,21 @@ body {
     font-size: 1.8rem;
     color: var(--gradient-2);
 }
-.hourly-rain-card.high-rain i {
+
+/* Emoji icon in hourly rain cards (replaces FontAwesome <i> for hourly weather) */
+.hourly-weather-emoji {
+    font-size: 1.8rem;
+    line-height: 1;
+    display: block;
+    text-align: center;
+    transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s ease;
+}
+.night-icon {
+    filter: drop-shadow(0 0 10px rgba(129, 140, 248, 0.8)) !important;
+    opacity: 0.85;
+    transform: scale(0.93); /* Subtle scale down for nighttime mood */
+}
+.hourly-rain-card.high-rain .hourly-weather-emoji {
     color: #3b82f6;
     animation: rainPulse 1.5s infinite;
 }
@@ -584,7 +647,9 @@ body {
 /* Map Section */
 .map-container {
     width: 100%;
-    height: 400px;
+    height: 400px; /* Fallback */
+    aspect-ratio: 16 / 9;
+    max-height: 70vh;
     border-radius: 16px;
     margin-top: 20px;
     z-index: 1;
@@ -716,7 +781,7 @@ body {
     .unit { font-size: 1.3rem; }
     
     .metrics-grid { gap: 10px; }
-    .metric-card { padding: 12px; flex-direction: column; text-align: center; gap: 8px; }
+    .metric-card { padding: 12px; display: grid; grid-template-columns: auto 1fr; text-align: left; gap: 10px; }
     .metric-icon { margin-right: 0; margin-bottom: 4px; }
     .metric-value { font-size: 1rem; }
     
